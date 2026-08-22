@@ -12,7 +12,7 @@ jobs:
       - name: Checkout Code Repository
         uses: actions/checkout@v4
 
-      - name: Deploy Complete Stack via Docker Compose
+      - name: CI/CD Pipeline - DDoS Detector
         run: |
           sudo docker compose down --remove-orphans
           sudo docker compose up -d --build
