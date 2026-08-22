@@ -1,18 +1,68 @@
-name: CI/CD Pipeline with Docker and Self-Hosted Runner
+name: CI/CD Pipeline - DDoS Detector
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
 jobs:
-  deploy:
-    # This matches the exact multi-labels your runner spit out during setup!
-    runs-on: [self-hosted, linux, x64] 
+  test:
+    name: Run Backend Tests
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code Repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: CI/CD Pipeline - DDoS Detector
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python Dependencies
         run: |
-          sudo docker compose down --remove-orphans
-          sudo docker compose up -d --build
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Tests
+        run: |
+          pytest tests/ -v
+
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Build Frontend
+        working-directory: frontend
+        run: npm run build
+
+  deploy:
+    name: Deploy to EC2
+    needs:
+      - test
+      - build-frontend
+    runs-on: [self-hosted, linux, x64]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy Complete Stack
+        run: |
+          docker compose down --remove-orphans
+          docker compose up -d --build
