@@ -1,0 +1,41 @@
+services:
+  ddos-api:
+    build: .
+    container_name: ddos-detector-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - models_data:/app/models
+      - results_data:/app/results
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Optional: run the live traffic simulator against the same trained model.
+  # Start with: docker compose --profile detector up ddos-detector
+  ddos-detector:
+    build: .
+    container_name: ddos-detector-stream
+    profiles: ["detector"]
+    volumes:
+      - models_data:/app/models
+    entrypoint: ["python", "-m", "src.detector"]
+    depends_on:
+      - ddos-api
+
+  dashboard:
+    build: ./frontend
+    container_name: ddos-detector-dashboard
+    ports:
+      - "3000:80"
+    depends_on:
+      - ddos-api
+    restart: unless-stopped
+
+volumes:
+  models_data:
+  results_data:
