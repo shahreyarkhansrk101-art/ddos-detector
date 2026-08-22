@@ -86,8 +86,9 @@ export default function App() {
   return (
     <div className="app">
       <header>
-        <h1>DDoS Detector</h1>
-        <p className="muted">Live network flow monitoring — ML-scored in real time</p>
+        <h1>🚀 CI/CD Deployment Test</h1>
+         
+	<p className="muted">Live network flow monitoring — ML-scored in real time</p>
       </header>
 
       {error && (
