@@ -6,15 +6,13 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted # Natively targets your linked EC2 runner instance
+    # This matches the exact multi-labels your runner spit out during setup!
+    runs-on: [self-hosted, linux, x64] 
     steps:
       - name: Checkout Code Repository
         uses: actions/checkout@v4
 
       - name: Deploy Complete Stack via Docker Compose
         run: |
-          # Kill any running old container instances and clear orphan layers
           sudo docker compose down --remove-orphans
-          
-          # Force a fresh context rebuild and launch the background tracking daemons
           sudo docker compose up -d --build
